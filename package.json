@@ -1,0 +1,21 @@
+{
+  "name": "backendlearning",
+  "version": "1.0.0",
+  "description": "backend learning",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "dev": "nodemon index.js"
+  },
+  "keywords": [
+    "javascript",
+    "backend",
+    "model"
+  ],
+  "author": "shubham savani",
+  "license": "ISC",
+  "devDependencies": {
+    "nodemon": "^3.1.4",
+    "prettier": "^3.3.3"
+  }
+}
