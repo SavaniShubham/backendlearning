@@ -39,12 +39,19 @@ const registeruser = asyncHandler( async (req, res)=> {
 // step -4 : check for images,check for avatar
    //you use multer middleware to get image this multer add more fileds to request 
    //here files filed added by multer in request
-   //images has so many option for check lige jpg , pn g , size etc 
+   //images has so many option for check lige jpg , png , size etc 
 
    console.log(req.files);
    console.log(req.files?.avatar);
    const avatarLocalPath = req.files?.avatar[0]?.path;
-   const coverImagepath = req.files?.coverImage[0]?.path;
+   // const coverImagepath = req.files?.coverImage[0]?.path;
+
+    //if coverimage is not send
+   let coverImagepath ;
+     
+     if (req.files && Array.isArray(req.files.coverImage)&&req.files.coverImage.length>0) {
+      coverImagepath = req.files.coverImage[0].path;
+     }
    if (!avatarLocalPath) {
 
       throw new ApiError(400 , "Avatar file is required");
@@ -54,6 +61,7 @@ const registeruser = asyncHandler( async (req, res)=> {
 
      const avatar =await uploadoncloudinary(avatarLocalPath);
      const coverImage=await uploadoncloudinary(coverImagepath);
+     console.log(avatar);
 
      if (!avatar)
      {
@@ -78,6 +86,7 @@ const registeruser = asyncHandler( async (req, res)=> {
 
       const createduser = await User.findById(user._id).select("-password -refreshToken");//this two field withoutfileds are selected
       //there otherways to do it
+      console.log(createduser);
       
 // step-8 :check for user creation
      if (!createduser)

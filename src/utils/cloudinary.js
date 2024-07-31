@@ -7,7 +7,7 @@ import fs from "fs";
     cloudinary.config({ 
         cloud_name: process.env.CLOUD_NAME, 
         api_key:process.env.API_KEY,
-        api_secret:process.env.API_SECRET,
+        api_secret:process.env.API_SECREAT,
     });
 
     const uploadoncloudinary =async (localfilepath)=>
@@ -22,9 +22,12 @@ import fs from "fs";
             )
             console.log(response);
             console.log("FILE is uploaded on cloudinary ",response.url);
+            fs.unlinkSync(localfilepath);
             return response;
             
         } catch (error) {
+
+            console.log("FILE is uploaded on cloudinary failed ");
             fs.unlinkSync(localfilepath);//remove the locally save file as the upload operation failed
             return null;  
         }
