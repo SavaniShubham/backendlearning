@@ -15,13 +15,12 @@ import fs from "fs";
         try {
             if (!localfilepath) return null;
                 
-           
-
             const response =  await cloudinary.uploader.upload(localfilepath,
                 {
                     resource_type:"auto"
                 }
             )
+            console.log(response);
             console.log("FILE is uploaded on cloudinary ",response.url);
             return response;
             
@@ -31,6 +30,8 @@ import fs from "fs";
         }
 
     }
+
+    export default uploadoncloudinary;
 
 
 
