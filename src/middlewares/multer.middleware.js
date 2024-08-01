@@ -4,11 +4,11 @@ import multer from "multer";
 
 
 const storage = multer.diskStorage({
-    destination: function (req, file, cb) {
+    destination: function (_, file, cb) {
       cb(null, "./public/temp")
       console.log("file geted!!" , file)
     },
-    filename: function (req, file, cb) {
+    filename: function (_, file, cb) {
       
       cb(null, file.originalname)
       console.log("file name  geted!!" , file.originalname);
