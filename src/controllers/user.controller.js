@@ -113,8 +113,11 @@ const registeruser = asyncHandler( async (req, res)=> {
  {
    try {
       const user = await User.findById(userId);
+      console.log("this line  !!");
       const accessToken = user.generateAccessToken();
+      console.log("this line  !!");
       const refreshToken = user.generateRefreshToken();
+      console.log("this line  !!");
       console.log(`access token :${accessToken} , refresh token : ${refreshToken}`)
 
       user.refreshToken = refreshToken;
@@ -131,9 +134,10 @@ const registeruser = asyncHandler( async (req, res)=> {
  const loginuser =asyncHandler(async (req , res)=>
  {
    // step -1 get data from req body
+   console.log(req.body);
 
    const {username , password , email }=req.body;
-   if (!username  || !email) 
+   if (!(username || email)) 
    {
       throw new ApiError(400 , "username or email is required")
    }
@@ -167,7 +171,7 @@ const registeruser = asyncHandler( async (req, res)=> {
    const loggedInuser = await User.findById(user._id).select("-password -refreshToken");
 
    
-   // step-5 send them in cookie and return response to the user
+   // step-5 send token in cookie and return response to the user
    const options = 
    {
       httponly:true ,
@@ -191,7 +195,11 @@ const registeruser = asyncHandler( async (req, res)=> {
 
  const logOutUser = asyncHandler (async (req , res)=>
          {
+            console.log(req.user);
             const userid = req.user._id;
+
+            
+        console.log("this line !!!");
            await User.findByIdAndUpdate(userid , 
                {
                   $set:{refreshToken : undefined}
@@ -207,8 +215,8 @@ const registeruser = asyncHandler( async (req, res)=> {
             }
 
             return res.status(200).
-                  ClearCookie("accessToken" , options).
-                  ClearCookie("refrshToken",options).
+                  clearCookie("accessToken" , options).
+                  clearCookie("refrshToken",options).
                   json(new ApiResponse(200 , {} , "User LogOut Suceesfully "))
                                   
          
