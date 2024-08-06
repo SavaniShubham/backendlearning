@@ -21,6 +21,7 @@ import { User } from "../modules/user.model.js";
         console.log("this line !!!");
     
         const decodedtoken  = jwt.verify(token , process.env.ACCESS_TOKEN_SECRET)
+        console.log(decodedtoken);
         
         console.log("this line !!!");
     

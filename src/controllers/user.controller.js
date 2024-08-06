@@ -3,7 +3,7 @@ import { User } from "../modules/user.model.js";
 import ApiError from "../utils/ApiError.js";
 import ApiResponse from "../utils/ApiResponse.js";
 import asyncHandler from "../utils/asyncHandler.js";
-import uploadoncloudinary from "../utils/cloudinary.js";
+import uploadoncloudinary, { deleteFromCloudinaryByUrl } from "../utils/cloudinary.js";
 
 const registeruser = asyncHandler( async (req, res)=> {
 
@@ -234,6 +234,7 @@ const registeruser = asyncHandler( async (req, res)=> {
       try {
    
          const decodedtoken = jwt.verify(incomingRefreshToken , process.en.REFRESH_TOKEN_SECRET)
+         console.log(decodedtoken);
    
           const user = await User.findById(decodedtoken?._id);
    
@@ -302,7 +303,7 @@ const getCurrentUser = asyncHandler(async (req , res)=>
    const user = await req.user ;
 
    return res.status(200).
-              json(200 , user , "Current User fetched Successfully")
+              json( new ApiError (200 , user , "Current User fetched Successfully"))
 
 }) 
 
@@ -333,7 +334,10 @@ const updateAccountDetails = asyncHandler( async(req , res)=>
 
 const updateUserAvatar =asyncHandler(async (req , res)=>
 {
-   const avatarLocalPath =req.file?.path;
+   console.log( "request file " , req.file);
+   console.log("user : " , req.user);
+   const avatarLocalPath =req.file.path;
+   console.log("Avatar localpath :" ,avatarLocalPath );
 
    if (!avatarLocalPath) {
       throw new ApiError(400 , "Avatar File is missing");
@@ -344,6 +348,16 @@ const updateUserAvatar =asyncHandler(async (req , res)=>
       throw new ApiError(400 , "Error While uploading Avatar "); 
     }
 
+    const oldAvatarurl = await User.findById(req.user._id).select("avatar");
+    console.log(oldAvatarurl);
+    if (oldAvatarurl) {
+      console.log("old url getted !!")
+      deleteFromCloudinaryByUrl(oldAvatarurl);
+      console.log("old avatar image remove successfully")
+
+    }
+
+    
    const user = await User.findByIdAndDelete(req.user?._id,
       {
          $set:
@@ -356,6 +370,7 @@ const updateUserAvatar =asyncHandler(async (req , res)=>
          new:true
       }
     ).select("-password")
+    console.log(user);
 
     return res.status(200).
                json(new ApiResponse(200 , user , "Avatar Updated Successfully"))
