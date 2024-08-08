@@ -10,7 +10,7 @@ import { User } from "../modules/user.model.js";
     try {
 
         console.log("this line !!!");
-        const token = req.cookie?.accessToken || req.header("Authorization")?.replace("Bearer ","");
+        const token = req.cookies?.accessToken || req.header("Authorization")?.replace("Bearer ","");
          //we cna get the token from  direct the cookie or in header => Authorization :Bearer <token> we send the token and we get the token from it (here we replace "bearer " with "" so only token will be there )  
          
         console.log("this line !!!");

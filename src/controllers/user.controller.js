@@ -184,7 +184,7 @@ const registeruser = asyncHandler( async (req, res)=> {
             return res.
                       status(200)
                       .cookie("accessToken" , accessToken , options)
-                      .cookie("refrehsToken" ,refreshToken , options)
+                      .cookie("refreshToken" ,refreshToken , options)
                       .json(
                         new ApiResponse(200 , 
                            {
@@ -206,7 +206,11 @@ const registeruser = asyncHandler( async (req, res)=> {
         console.log("this line !!!");
            await User.findByIdAndUpdate(userid , 
                {
-                  $set:{refreshToken : undefined}
+                  // $set:{refreshToken : undefined}
+                  $unset:
+                  {
+                     refreshAccessToken:1 // this remove the field from document
+                  }
                },
                {
                   new:true,
@@ -220,7 +224,7 @@ const registeruser = asyncHandler( async (req, res)=> {
 
             return res.status(200).
                   clearCookie("accessToken" , options).
-                  clearCookie("refrshToken",options).
+                  clearCookie("refreshToken",options).
                   json(new ApiResponse(200 , {} , "User LogOut Suceesfully "))
                                   
          
@@ -229,14 +233,15 @@ const registeruser = asyncHandler( async (req, res)=> {
 
  const refreshAccessToken = asyncHandler(async (req , res)=>
    {
-      const incomingRefreshToken = req.cookie.refreshToken || req.body.refreshToken
+      const incomingRefreshToken = req.cookies.refreshToken || req.body.refreshToken
+      console.log(incomingRefreshToken);
 
       if (!incomingRefreshToken) {
          throw new ApiError(401,"Unauthrized Request !");
       }
       try {
    
-         const decodedtoken = jwt.verify(incomingRefreshToken , process.en.REFRESH_TOKEN_SECRET)
+         const decodedtoken = jwt.verify(incomingRefreshToken , process.env.REFRESH_TOKEN_SECRET)
          console.log(decodedtoken);
    
           const user = await User.findById(decodedtoken?._id);
