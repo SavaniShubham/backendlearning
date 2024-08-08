@@ -6,6 +6,7 @@ import asyncHandler from "../utils/asyncHandler.js";
 import uploadoncloudinary, { deleteFromCloudinaryByUrl } from "../utils/cloudinary.js";
 import mongooseAggregatePaginate from "mongoose-aggregate-paginate-v2";
 import { Subscription } from "../modules/subscription.model.js";
+import mongoose from "mongoose";
 
 const registeruser = asyncHandler( async (req, res)=> {
 
@@ -471,6 +472,8 @@ const updateUserCoverImage =asyncHandler(async (req , res)=>
             },
          },
       ]);
+
+      console.log(channel);
    
       if (!channel?.length) {
          return next(new ApiError(404, "Channel does not exist"));
@@ -480,7 +483,66 @@ const updateUserCoverImage =asyncHandler(async (req , res)=>
          new ApiResponse(200, channel[0], "User channel fetched successfully")
       );
    });
+
+
+   const getWatchHistory = asyncHandler(async (req , res , next)=>
+   {
+      const user =await User.aggregate([
+         {
+            $match:
+            {
+               _id:new mongoose.Types.ObjectId(req.user._id)//before we write direct _id=req.user._id(beacause here mongoose convert string into the mongodb id automatically) b ut in aggregation it can't done directly so convert that string to mongodb id and then assign it
+            }
+         },
+         {
+            $lookup:
+            {
+               from:"videos",
+               localField:"watchHistory",
+               foreignField:"_id",
+               as:"watchHistory",
+               pipeline:
+               [
+                  {
+                  $lookup:
+                  {
+                     from:"users",
+                     localField:"owner",
+                     foreignField:"_id",
+                     as:"owner",
+                     pipeline:[
+                        {
+                           $project:
+                           {
+                              fullname:1,
+                              username:1,
+                              avatar:1,
+                           }
+                        }
+                     ]
+                  },
+                  },
+                  {
+                     $addFields:
+                     {
+                        owner:
+                        {
+                           $first:"$owner"
+                        }
+                     }
+                  }
+
+               ]
+            }
+         },
+        
+      ])
+
+      console.log(user);
+
+      return res.status(200).json(new ApiResponse(200 , user[0].watchHistory , "Watch History fetch successfully"))
+   })
    
    
 export default registeruser ;
-export {loginuser , logOutUser , refreshAccessToken , changeCurrentPassword , getCurrentUser ,updateAccountDetails , updateUserAvatar , updateUserCoverImage , getUserChannelProfile };
+export {loginuser , logOutUser , refreshAccessToken , changeCurrentPassword , getCurrentUser ,updateAccountDetails , updateUserAvatar , updateUserCoverImage , getUserChannelProfile , getWatchHistory };
