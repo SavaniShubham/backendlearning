@@ -20,7 +20,7 @@ app.use(express.static("public"))
 
 app.use(cookieParser())
 
-import userouter from "./routes/user.routes.js"
+import userRouter from "./routes/user.routes.js"
 import healthcheckRouter from "./routes/healthcheck.routes.js"
 import tweetRouter from "./routes/tweet.routes.js"
 import subscriptionRouter from "./routes/subscription.routes.js"

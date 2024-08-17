@@ -1,11 +1,10 @@
 import jwt from "jsonwebtoken";
-import { User } from "../modules/user.model.js";
+import { User } from "../models/user.model.js";
 import ApiError from "../utils/ApiError.js";
 import ApiResponse from "../utils/ApiResponse.js";
 import asyncHandler from "../utils/asyncHandler.js";
 import uploadoncloudinary, { deleteFromCloudinaryByUrl } from "../utils/cloudinary.js";
-import mongooseAggregatePaginate from "mongoose-aggregate-paginate-v2";
-import { Subscription } from "../modules/subscription.model.js";
+
 import mongoose from "mongoose";
 
 const registeruser = asyncHandler( async (req, res)=> {
@@ -13,7 +12,7 @@ const registeruser = asyncHandler( async (req, res)=> {
 
  // step -1 :get the user details (get images using middleware in user.routes.js )
      // console.log( "request :" ,req);
-   console.log( "request body  :" ,req.body);
+    console.log( "request body  :" ,req.body);
     const {fullname , username , email , password}=req.body;
     console.log("full name :" , fullname);
    //  console.log("username :" , username);
@@ -496,7 +495,7 @@ const updateUserCoverImage =asyncHandler(async (req , res)=>
          {
             $match:
             {
-               _id:new mongoose.Types.ObjectId(req.user._id)//before we write direct _id=req.user._id(beacause here mongoose convert string into the mongodb id automatically) b ut in aggregation it can't done directly so convert that string to mongodb id and then assign it
+               _id:new mongoose.Types.ObjectId(req.user._id)//before we write direct _id=req.user._id(beacause here mongoose convert string into the mongodb id automatically) but in aggregation it can't done directly so convert that string to mongodb id and then assign it
             }
          },
          {

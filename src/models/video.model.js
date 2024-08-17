@@ -2,7 +2,7 @@ import mongoose , {Schema} from "mongoose";
 import mongooseAggregatePaginate from "mongoose-aggregate-paginate-v2";
 
 const videoSchema = new Schema(
-    {
+    { 
         videoFile:
         {
             type:String,   //cloudinary url
@@ -39,7 +39,7 @@ const videoSchema = new Schema(
         isPublished:
         {
             type:Boolean, 
-            default:0,
+            default:false,
         },
        owner: {
             type:Schema.Types.ObjectId,
