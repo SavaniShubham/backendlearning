@@ -14,6 +14,7 @@ const videoSchema = new Schema(
             type:String,   //cloudinary url
             required:true,
            
+            
         },
        title :
         {
