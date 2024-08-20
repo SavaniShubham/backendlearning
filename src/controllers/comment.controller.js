@@ -24,7 +24,7 @@ const getVideoComments = asyncHandler(async (req, res) => {
     const comments = await Comment.find({ video: videoId })
         .sort({ createdAt: -1 })
         .skip((page - 1) * limit)
-        .limit(parseInt(limit))
+        .limit(Number(limit))
         .populate('owner', 'fullname username avatar')
         .exec();
 
@@ -33,7 +33,7 @@ const getVideoComments = asyncHandler(async (req, res) => {
 
     return res.status(200).json(new ApiResponse(200, {
         comments,
-        currentPage: parseInt(page),
+        currentPage: Number(page),
         totalPages: Math.ceil(totalComments / limit),
         totalComments,
     }, "Comments retrieved successfully"));
@@ -42,12 +42,12 @@ const getVideoComments = asyncHandler(async (req, res) => {
 
 const addComment = asyncHandler(async (req, res) => {
     const { videoId } = req.params;
-    const { commentContent } = req.body;
+    const {  content } = req.body;
 
     if (!videoId) {
         throw new ApiError(400, "videoId is required");
     }
-    if (!commentContent) {
+    if (! content) {
         throw new ApiError(400, "commentContent is required");
     }
 
@@ -67,12 +67,12 @@ const addComment = asyncHandler(async (req, res) => {
 
     // Create the comment
     const comment = await Comment.create({
-        content: commentContent,
+        content,
         video: videoId,
         owner: ownerId,
     });
 
-    return res.status(200).json(new ApiResponse(200, comment, "Comment added successfully"));
+    return res.status(201).json(new ApiResponse(201, comment, "Comment added successfully"));
 });
 
 
@@ -80,9 +80,10 @@ const updateComment = asyncHandler(async (req, res) => {
     const { commentId } = req.params;
     const { newContent } = req.body;
 
-    if (!commentId) {
-        throw new ApiError(400, "commentId is required");
+    if (!mongoose.Types.ObjectId.isValid(commentId)) { // you do this check for all the ids
+        throw new ApiError(400, "Invalid commentId format");
     }
+
     if (!newContent) {
         throw new ApiError(400, "newContent is required");
     }

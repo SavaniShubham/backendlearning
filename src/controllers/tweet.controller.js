@@ -22,7 +22,7 @@ const createTweet = asyncHandler(async (req, res) => {
     const tweet = await Tweet.create(
         {
             content,
-            owner:req.user_id
+            owner:req.user._id
         }
     )
    
@@ -51,9 +51,10 @@ const getUserTweets = asyncHandler(async (req, res) => {
 
     const tweets = await Tweet.find({owner:user._id}).select("content");
 
-    if (!tweets) {
-        throw new ApiError(400, "No tweet exist");
+    if (tweets.length === 0) {
+        throw new ApiError(404, "No tweets found");
     }
+
 
     return res.status(200).json(new ApiResponse(200, tweets, "Tweets fetched successfully"));
 })
@@ -112,7 +113,7 @@ const deleteTweet = asyncHandler(async (req, res) => {
         throw new ApiError(500, "Something went wrong while deleting the tweet");
     }
 
-    return res.status(204).json(new ApiResponse(204, deletedtweet, "Tweet deleted successfully"));
+    return res.status(204).json(new ApiResponse(204, null, "Tweet deleted successfully"));
 
 })
 

@@ -4,19 +4,24 @@ import ApiError from "../utils/ApiError.js"
 import ApiResponse from "../utils/ApiResponse.js"
 import asyncHandler from "../utils/asyncHandler.js"
 import { Video } from "../models/video.model.js"
+import { User } from "../models/user.model.js"
+
 
 
 
 const createPlaylist = asyncHandler(async (req, res) => {
+   
     const {name, description} = req.body
-
     //TODO: create playlist
 
-    if (!name || !description) {
+    if (!name) {
+        throw new ApiError(400, "name is required");
+    }
+    if (!(description)) {
         throw new ApiError(400, "All fields are required");
     }
 
-    const ownerdetails = await Video.findById(req.user._id).select("username fullname avatar");
+    const ownerdetails = await User.findById(req.user._id).select("username fullname avatar");
     if (!ownerdetails) {
         throw new ApiError(404, "Owner not found");
     }
@@ -78,11 +83,10 @@ const getPlaylistById = asyncHandler(async (req, res) => {
 })
 
 const addVideoToPlaylist = asyncHandler(async (req, res) => {
-    const {playlistId, videoId} = req.params
+    const { playlistId, videoId } = req.params;
 
-    
     if (!playlistId || !videoId) {
-        throw new ApiError(400, "All fields are required");
+        throw new ApiError(400, "Playlist ID and Video ID are required");
     }
 
     const videodetails = await Video.findById(videoId);
@@ -90,19 +94,23 @@ const addVideoToPlaylist = asyncHandler(async (req, res) => {
         throw new ApiError(404, "Video not found");
     }
 
-    const playList =  await Playlist.findByIdAndUpdate(playlistId , 
-        { $push: { Videos: videodetails._id } },
-        { new: true }
-    )
+    const playList = await Playlist.findById(playlistId);
+    if (!playList) {
+        throw new ApiError(404, "Playlist not found");
+    }
 
-    if (!playList)
-        {
-            throw new ApiError(500 , "Something went wrong while adding the videos to the playlist")
-        }
+    // Check if the video is already in the playlist
+    if (playList.videos.includes(videoId)) {
+        return res.status(200).json(new ApiResponse(200, playList, "Video is already in the playlist"));
+    }
 
-        return res.status(200).json( new ApiResponse(200 , playList , "Video added to playList successfully"));
+    // Add video to the playlist
+    playList.videos.push(videoId);
+    await playList.save();
 
-})
+    return res.status(200).json(new ApiResponse(200, playList, "Video added to playlist successfully"));
+});
+
 
 const removeVideoFromPlaylist = asyncHandler(async (req, res) => {
     const {playlistId, videoId} = req.params
@@ -118,7 +126,7 @@ const removeVideoFromPlaylist = asyncHandler(async (req, res) => {
         throw new ApiError(404, "No playlist found");
     }
 
-    playList.Videos.pull(videoId);
+    playList.videos.pull(videoId);
 
      await playList.save();
 

@@ -8,9 +8,42 @@ import uploadOnCloudinary from "../utils/cloudinary.js"
 
  
 const getAllVideos = asyncHandler(async (req, res) => {
-    const { page = 1, limit = 10, query, sortBy, sortType, userId } = req.query
-    //TODO: get all videos based on query, sort, pagination
-})
+    const { page = 1, limit = 10, query = '', sortBy = 'createdAt', sortType = 'desc', userId } = req.query;
+
+    const filter = {};
+    if (query) {
+        filter.$or = [
+            { title: { $regex: query, $options: 'i' } },
+            { description: { $regex: query, $options: 'i' } },
+        ];
+    }
+
+    if (userId && isValidObjectId(userId)) {
+        filter.user = userId;
+    }
+
+    const sort = { [sortBy]: sortType === 'desc' ? -1 : 1 };
+    const skip = (page - 1) * limit;
+
+    const videos = await Video.find(filter)
+        .sort(sort)
+        .skip(skip)
+        .limit(Number(limit));
+
+    const totalVideos = await Video.countDocuments(filter);
+
+    res.status(200).json(new ApiResponse(200 , {
+        data: videos,
+        pagination: {
+            total: totalVideos,
+            page: Number(page),
+            limit: Number(limit),
+            totalPages: Math.ceil(totalVideos / limit),
+        },
+    } , "All video Fetched successfully"
+));
+});
+
 
 const publishAVideo = asyncHandler(async (req, res) => {
 
@@ -23,12 +56,12 @@ const publishAVideo = asyncHandler(async (req, res) => {
         throw new ApiError(400 , "video title and description is required")   
     }
 
-   const existetvideo = await Video.findOne(
+   const existvideo = await Video.findOne(
         {
         $or : [{title} , {description}]
         }
     )
-    if (existetvideo)
+    if (existvideo)
         {
             throw new ApiError(409 , "video with title and description is already published")   
         }
@@ -50,7 +83,7 @@ const publishAVideo = asyncHandler(async (req, res) => {
         }
         if (!thumbnailLocalPath) 
             {
-                throw new ApiError(400 , "video file is required");
+                throw new ApiError(400 , "thumbnail is required");
             }
         
         const videoFile =  await uploadOnCloudinary(videoFileLocalPath);
@@ -74,7 +107,7 @@ const publishAVideo = asyncHandler(async (req, res) => {
         // }
 
         const ownerDetails = await User.aggregate([
-            { $match: { _id: mongoose.Types.ObjectId(ownerId) } },
+            { $match: { _id: new  mongoose.Types.ObjectId(ownerId) } },
             {
                 $project: {
                     fullname: 1,
@@ -113,7 +146,7 @@ const getVideoById = asyncHandler(async (req, res) => {
     const { videoId } = req.params
 
     if (!videoId) {
-        throw new ApiError(404, " Video ID is required");
+        throw new ApiError(400, " Video ID is required");
     }
     
     const video =  await Video.findById(videoId);

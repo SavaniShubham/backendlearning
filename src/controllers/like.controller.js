@@ -45,7 +45,7 @@ const toggleCommentLike = asyncHandler(async (req, res) => {
     }
 
     // Find an existing like
-    const existingLike = await Like.findOne({ comment: commentId, likedBy: userId });
+    const existingLike = await Like.findOne({ Comment: commentId, likedBy: userId });
 
     if (existingLike) {
         // If a like exists, remove it
@@ -54,7 +54,7 @@ const toggleCommentLike = asyncHandler(async (req, res) => {
     } else {
         // If no like exists, add a new like
         const newLike = await Like.create({
-            comment: commentId,
+            Comment: commentId,
             likedBy: userId
         });
         return res.status(201).json(new ApiResponse(201, newLike, "comment liked toggled  successfully"));
@@ -114,10 +114,12 @@ const getLikedVideos = asyncHandler(async (req, res) => {
             }
         },
         {
-            $project:
-            {
-                _id:0,
-                videodetails:{$arrayElemAt: ["$videodetails" , 0 ]},
+            $unwind: "$videodetails" // Ensure each video detail is an object
+        },
+        {
+            $project: {
+                _id: 0,
+                videodetails: 1
             }
         }
     ]);
@@ -130,6 +132,7 @@ const getLikedVideos = asyncHandler(async (req, res) => {
     return res.status(200).json(new ApiResponse(200, result.map(doc => doc.videodetails), "Liked videos retrieved successfully"));
 
 })
+
 
 export {
     toggleCommentLike,
